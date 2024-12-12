@@ -1,0 +1,78 @@
+from PIL import Image, ImageDraw, ImageFont
+from IPython.display import display, clear_output
+import random
+
+class Equation:
+    def __init__(self):
+        self.a = random.randint(1, 10)
+        self.b = random.randint(1, 10)
+        self.result = random.randint(1, 20)
+        self.x_value = (self.result - self.b) / self.a
+        self.text = f"{self.a}x + {self.b} = {self.result}"
+
+    def get_text(self):
+        return self.text
+
+    def get_solution(self):
+        return self.x_value
+
+
+class EquationImage:
+    def create_image(self, equation_text):
+
+        width, height = 400, 200
+        img = Image.new('RGB', (width, height), color=(255, 255, 255))
+        draw = ImageDraw.Draw(img)
+
+        font = ImageFont.load_default()
+
+        text_bbox = draw.textbbox((0, 0), equation_text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+        position = ((width - text_width) // 2, (height - text_height) // 2)
+
+        draw.text(position, equation_text, fill="black", font=font)
+        img.save("question.png")
+        return "question.png"
+
+
+class MathGame:
+    def __init__(self):
+        self.score = 0
+        self.rounds = 5
+
+    def ask_question(self):
+        clear_output(wait=True)
+        equation = Equation()
+        equation_text = equation.get_text()
+        correct_answer = equation.get_solution()
+
+        image_creator = EquationImage()
+        image_path = image_creator.create_image(equation_text)
+        display(Image.open(image_path))
+
+        while True:
+            try:
+                user_answer = float(input("Ingresa el valor de x: "))
+                return abs(user_answer - correct_answer) < 0.01
+            except ValueError:
+                print("Por favor, escribe un número válido.")
+
+    def play(self):
+        print("¡Bienvenido al juego de ecuaciones!")
+        print("Resuelve las ecuaciones para encontrar el valor de 'x'.")
+        input("Presiona Enter para comenzar...\n")
+
+        for _ in range(self.rounds):
+            if self.ask_question():
+                print("¡Correcto!")
+                self.score += 1
+            else:
+                print("Incorrecto.")
+
+        print(f"\nJuego terminado. Tu puntaje fue: {self.score}/{self.rounds}")
+
+
+if __name__ == "__main__":
+    game = MathGame()
+    game.play()
